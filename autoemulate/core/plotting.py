@@ -53,7 +53,6 @@ def plot_xy(
     title: str = "xy",
     input_label: str | None = None,
     output_label: str | None = None,
-    r2_score: float | None = None,
     error_style: Literal["bars", "fill"] = "bars",
 ):
     """
@@ -77,8 +76,6 @@ def plot_xy(
         An optional input label to plot.
     output_label: str | None
         An optional output label to plot.
-    r2_score: float | None
-        An option r2 score to include in the plot legend.
     error_style: Literal["bars", "fill"]
         The style of error representation in the plots. Can be "bars" for error
         bars or "fill" for shaded error regions. Defaults to "bars".
@@ -178,31 +175,6 @@ def plot_xy(
         ncol=2,
     )
 
-    # Place R² just below the legend
-    if legend:
-        # Get the bounding box of the legend in axes coordinates
-        bbox = legend.get_window_extent(ax.figure.canvas.get_renderer())  # pyright: ignore[reportAttributeAccessIssue]
-        inv = ax.transAxes.inverted()
-        bbox_axes = bbox.transformed(inv)
-        # Place the text just below the legend
-        text_x = bbox_axes.x0
-        text_y = bbox_axes.y0 - 0.04  # small offset below legend
-        ax.text(
-            text_x,
-            text_y,
-            f"R\u00b2 = {r2_score:.6f}",
-            transform=ax.transAxes,
-            verticalalignment="top",
-        )
-    else:
-        # fallback: place in lower left
-        ax.text(
-            0.05,
-            0.05,
-            f"R\u00b2 = {r2_score:.6f}",
-            transform=ax.transAxes,
-            verticalalignment="bottom",
-        )
 
 
 def calculate_subplot_layout(n_plots, n_cols=3):

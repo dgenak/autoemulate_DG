@@ -13,7 +13,7 @@ from torch.distributions import Transform
 
 from autoemulate.core.device import TorchDeviceMixin
 from autoemulate.core.logging_config import get_configured_logger
-from autoemulate.core.metrics import R2, Metric, MetricParams, get_metric, get_metrics
+from autoemulate.core.metrics import R2, RMSE, MSE, Metric, MetricParams, get_metric, get_metrics
 from autoemulate.core.model_selection import bootstrap, evaluate
 from autoemulate.core.plotting import (
     calculate_subplot_layout,
@@ -693,7 +693,10 @@ class AutoEmulate(ConversionMixin, TorchDeviceMixin, Results):
 
         # Re-run prediction with just this model to get the predictions
         y_pred, y_variance = model.predict_mean_and_variance(test_x)
+
         r2_score = evaluate(y_pred, test_y, metric=R2)
+        rmse_score = evaluate(y_pred, test_y, metric=RMSE)
+        mse_score = evaluate(y_pred, test_y, metric=MSE)
 
         # Handle ranges
         input_ranges = input_ranges or {}
@@ -822,15 +825,22 @@ class AutoEmulate(ConversionMixin, TorchDeviceMixin, Results):
                         title=f"{input_names[in_idx]} vs. {output_names[out_idx]}",
                         input_label=input_names[in_idx],
                         output_label=output_names[out_idx],
-                        r2_score=r2_score,
                         error_style=error_style,
-                    )
+                    )   
                     plot_index += 1
 
         # Hide any unused subplots
         for ax in axs[plot_index:]:
             ax.set_visible(False)
-        plt.tight_layout()
+
+        metrics_text = (
+            f"R² = {r2_score:.6f}    "
+            f"RMSE = {rmse_score:.6f}    "
+            f"MSE = {mse_score:.6f}"
+        )
+
+        fig.suptitle(metrics_text, fontsize=14, y=0.99)
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
 
         if fname is None:
             return display_figure(fig)
